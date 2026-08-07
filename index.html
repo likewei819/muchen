@@ -447,13 +447,12 @@
 
   /* ----------------------------------------------------------
      解析 price.xlsx
-     表头为多行合并单元格，数据从首个日期行开始
+     表头为单行，数据从首个日期行开始
      列顺序:
        0 上架日期  1 开发款号
-       2 成本价（客户可见，已剔除）
-       3 下单价(未含税)  4 下单价(含1%)  5 下单价(含13%)
-       6 代发价(未含税)  7 代发价(含1%)  8 代发价(含13%)
-       9 面料成分
+       2 下单价(未含税)  3 下单价(含1%)  4 下单价(含13%)
+       5 代发价(未含税)  6 代发价(含1%)  7 代发价(含13%)
+       8 面料成分
      ---------------------------------------------------------- */
   function parsePriceXLSX(buf) {
     var wb = XLSX.read(buf, { type: 'array', cellDates: false });
@@ -473,13 +472,13 @@
       items.push({
         date: serialToDate(dateVal),
         styleNo: styleNo,
-        orderNoTax: parseFloat(r[3]) || 0,
-        orderVAT1: parseFloat(r[4]) || 0,
-        orderVAT13: parseFloat(r[5]) || 0,
-        dropNoTax: parseFloat(r[6]) || 0,
-        dropVAT1: parseFloat(r[7]) || 0,
-        dropVAT13: parseFloat(r[8]) || 0,
-        fabric: cellText(r[9])
+        orderNoTax: parseFloat(r[2]) || 0,
+        orderVAT1: parseFloat(r[3]) || 0,
+        orderVAT13: parseFloat(r[4]) || 0,
+        dropNoTax: parseFloat(r[5]) || 0,
+        dropVAT1: parseFloat(r[6]) || 0,
+        dropVAT13: parseFloat(r[7]) || 0,
+        fabric: cellText(r[8])
       });
     }
     return items;
