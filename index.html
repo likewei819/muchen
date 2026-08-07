@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沐辰服饰2026秋冬新品</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  /* ===== 页头 ===== */
+  .page-header {
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 18px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .page-header h1 { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+  .page-header .company-info {
+    font-size: 12px;            /* 比标题更小的字体 */
+    color: #888;
+    line-height: 1.8;
+  }
+  .page-header .company-info a { color: #666; text-decoration: none; }
+
+  /* ===== 主容器 ===== */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ===== 商品卡片 ===== */
+  .product-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    display: flex;
+    overflow: hidden;
+    margin-bottom: 28px;
+    transition: box-shadow .2s;
+  }
+  .product-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+
+  /* ===== 左侧轮播图片区（与右侧详情等高） ===== */
+  .card-gallery {
+    flex: 0 0 440px;
+    position: relative;
+    background: #fafafa;
+    display: flex;            /* 撑满卡片高度，与右侧等高 */
+  }
+  .carousel-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+  }
+  .carousel-track {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    cursor: grab;
+  }
+  .carousel-track:active { cursor: grabbing; }
+  .carousel-track::-webkit-scrollbar { display: none; }
+  .carousel-slide {
+    flex: 0 0 100%;           /* 每视图展示 1 张 */
+    scroll-snap-align: start;
+    scroll-snap-stop: always; /* 一次滑动最多只前进一张 */
+    height: 100%;             /* 桌面端铺满画廊高度 */
+    position: relative;       /* 颜色标签定位基准 */
+    display: flex;
+    flex-direction: column;   /* 图片在上 */
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    cursor: zoom-in;          /* 提示可点击放大 */
+  }
+  .carousel-slide .slide-img {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+  }
+  /* 图片方框左上角的颜色汉字标签 */
+  .carousel-slide .slide-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    margin: 0;
+    padding: 2px 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, .55);   /* 半透明深色底，任何图片上都清晰 */
+    border-radius: 4px;
+    text-align: left;
+  }
+
+  /* 轮播指示点（置于图片底部） */
+  .carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+  }
+  .carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.2);
+    transition: background .2s;
+  }
+  .carousel-dot.active { background: rgba(0,0,0,.7); }
+
+  /* 轮播箭头（仅桌面端，多于 1 张图时出现） */
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.85);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .product-card:hover .carousel-arrow { opacity: 1; }
+  .carousel-arrow:hover { background: #fff; }
+  .carousel-arrow.prev { left: 8px; }
+  .carousel-arrow.next { right: 8px; }
+
+  /* ===== 灯箱（点击图片放大） ===== */
+  .lightbox {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 999;
+    background: rgba(0,0,0,.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .lightbox.open { opacity: 1; pointer-events: auto; }
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+  .lightbox .lb-btn {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: background .2s;
+  }
+  .lightbox .lb-btn:hover { background: rgba(255,255,255,.3); }
+  .lightbox .lb-close { top: 18px; right: 18px; }
+  .lightbox .lb-prev { left: 18px; top: 50%; transform: translateY(-50%); }
+  .lightbox .lb-next { right: 18px; top: 50%; transform: translateY(-50%); }
+
+  /* ===== 右侧详情 ===== */
+  .card-detail {
+    flex: 1;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  /* 款号标签 + 上架日期 */
+  .card-header { display: flex; justify-content: space-between; align-items: center; }
+  .style-badge {
+    display: inline-block;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+  .launch-date { font-size: 13px; color: #999; }
+
+  /* 面料成分 */
+  .fabric-info { font-size: 13px; color: #666; }
+
+  /* 价格模块通用 */
+  .price-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  .price-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 张价格卡片一行（含移动端） */
+    gap: 6px;
+  }
+  .price-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 6px 8px;
+    text-align: center;
+    transition: border-color .2s;
+  }
+  .price-card:hover { border-color: #ccc; }
+  .price-card-label {
+    font-size: 10px;
+    color: #999;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .price-card-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+  .price-card-value .currency { font-size: 11px; font-weight: 400; }
+
+  /* ===== 尺码表 ===== */
+  .size-table-wrap { overflow-x: auto; }
+  .size-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 400px;
+  }
+  .size-table th,
+  .size-table td {
+    border: 1px solid #eee;
+    padding: 8px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .size-table th {
+    background: #f7f8fa;
+    font-weight: 600;
+    color: #555;
+  }
+  .size-table tr:hover td { background: #fafbfc; }
+
+  /* ===== 响应式 - 移动端 ===== */
+  @media (max-width: 860px) {
+    .page-header { position: static; }  /* 手机端不固定，随页面滚动 */
+
+    .product-card {
+      flex-direction: column;   /* 图片在上、详情在下 */
+    }
+    .card-gallery { flex: none; width: 100%; display: block; }
+    .carousel-wrap { display: block; }
+    .carousel-track { flex: none; width: 100%; }
+    .carousel-slide { aspect-ratio: 27 / 32; height: auto; }  /* 移动端保持竖图比例，约为原高度的 2/3 */
+    .card-detail { padding: 16px 14px; gap: 10px; }
+    .price-card-value { font-size: 15px; }
+    .carousel-arrow { display: none; }  /* 移动端靠触摸滑动 */
+
+    /* 移动端尺码表压缩，完整显示无需横向滑动 */
+    .size-table-wrap { overflow-x: visible; }
+    .size-table { min-width: 0; font-size: 11px; }
+    .size-table th,
+    .size-table td { padding: 6px 3px; }
+  }
+
+  /* ===== 页面底部备注 ===== */
+  .page-note {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px 28px;
+    font-size: 13px;
+    color: #999;
+    text-align: center;
+  }
+
+  /* ===== 加载 / 提示 ===== */
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 15px;
+  }
+  .loading::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e8e8e8;
+    border-top-color: #999;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>江阴市沐辰服饰科技有限公司</h1>
+  <div class="company-info">
+    <div>地址：江苏省无锡市江阴市华士镇华西十村赵巷路90-1号</div>
+    <div>联系人：赵志鹏 <a href="tel:15908161670">15908161670</a>(微信同号)</div>
+  </div>
+</div>
+
+<div class="container" id="app">
+  <div class="loading">正在加载数据...</div>
+</div>
+
+<div class="page-note">
+</div>
+
+<script src="lib/xlsx.full.min.js"></script>
+<script>
+/* ============================================================
+   服装产品展示 - 主脚本
+   1. 读取并解析 data/price.xlsx、data/size.xlsx（前端 JS 渲染）
+   2. 图片清单内嵌于 IMAGE_INVENTORY（针对已存在的款号）
+   3. 按 price.xlsx 顺序渲染商品卡片
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  var APP = document.getElementById('app');
+
+  /* ----------------------------------------------------------
+     图片清单：仅针对已存在的款号
+     图片路径根据 images 文件夹中实际文件填写
+     （每个款号一个文件夹，图片按颜色命名，如 黑.jpg、背面.jpg）
+     ---------------------------------------------------------- */
+  var IMAGE_INVENTORY = {
+    "1823":  ["咖.jpg", "背面.jpg", "黑.jpg"],
+    "1901":  ["栗.jpg", "灰.jpg", "背面.jpg"],
+    "19133": ["背面.jpg", "黑.jpg"],
+    "19251": ["背面.jpg", "黑.jpg"],
+    "2003-2":["咖.jpg", "杏.jpg", "湖蓝.jpg", "灰.jpg", "背面.jpg"],
+    "2402":  ["灰.jpg", "背面.jpg"],
+    "24087": ["橄榄绿.jpg", "背面.jpg"],
+    "24093": ["背面.jpg", "黑.jpg"],
+    "24110": ["棕.jpg", "灰.jpg", "背面.jpg"],
+    "25083": ["棕.jpg", "灰.jpg", "背面.jpg", "蓝.jpg"],
+    "25085": ["棕.jpg", "背面.jpg", "黑.jpg"],
+    "307":   ["咖.jpg", "棕.jpg", "灰.jpg", "背面.jpg"],
+    "338":   ["灰.jpg", "背面.jpg", "藏蓝.jpg", "黑.jpg"],
+    "8065":  ["棕.jpg", "背面.jpg", "黑.jpg"],
+    "8405":  ["背面.jpg", "黑.jpg"],
+    "8406":  ["咖.jpg", "橄榄绿.jpg", "灰.jpg", "灰白.jpg", "背面.jpg", "黑.jpg"],
+    "8407":  ["咖.jpg", "背面.jpg"],
+    "8407-2":["巧克力.jpg", "石墨灰.jpg", "背面.jpg"],
+    "8410":  ["棕.jpg", "灰.jpg", "背面.jpg"],
+    "92003": ["背面.jpg", "黑.jpg"],
+    "92005": ["背面.jpg", "黑格.jpg"],
+    "92008": ["背面.jpg", "黑格.jpg"],
+    "92019": ["背面.jpg", "黑格.jpg"],
+    "92581": ["灰格.jpg", "背面.jpg"]
+  };
+
+  /* ----------------------------------------------------------
+     加载文件: 优先 fetch，失败回退 XHR（需要 HTTP 服务）
+     以二进制形式读取，供 SheetJS 解析 xlsx
+     ---------------------------------------------------------- */
+  function loadFile(url) {
+    if (typeof fetch === 'function') {
+      return fetch(url).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.arrayBuffer();
+      }).catch(function () { return loadViaXHR(url); });
+    }
+    return loadViaXHR(url);
+  }
+  function loadViaXHR(url) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onload = function () {
+        if (xhr.status === 200 || xhr.status === 0) resolve(xhr.response);
+        else reject(new Error('XHR failed: ' + xhr.status));
+      };
+      xhr.onerror = function () { reject(new Error('网络错误')); };
+      xhr.send();
+    });
+  }
+
+  /* ----------------------------------------------------------
+     将单元格值转为展示字符串（去掉多余空格）
+     ---------------------------------------------------------- */
+  function cellText(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+
+  /* ----------------------------------------------------------
+     Excel 日期序列号 → YYYY-MM-DD
+     ---------------------------------------------------------- */
+  function serialToDate(v) {
+    if (typeof v !== 'number') return cellText(v);
+    var d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2);
+  }
+
+  /* ----------------------------------------------------------
+     解析 price.xlsx
+     表头为多行合并单元格，数据从首个日期行开始
+     列顺序:
+       0 上架日期  1 开发款号
+       2 成本价（客户可见，已剔除）
+       3 下单价(未含税)  4 下单价(含1%)  5 下单价(含13%)
+       6 代发价(未含税)  7 代发价(含1%)  8 代发价(含13%)
+       9 面料成分
+     ---------------------------------------------------------- */
+  function parsePriceXLSX(buf) {
+    var wb = XLSX.read(buf, { type: 'array', cellDates: false });
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var items = [];
+    var started = false;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var dateVal = r[0];
+      if (!started) {
+        if (typeof dateVal === 'number' && dateVal > 20000) started = true;
+        else continue;
+      }
+      var styleNo = cellText(r[1]);
+      if (!styleNo) continue;
+      items.push({
+        date: serialToDate(dateVal),
+        styleNo: styleNo,
+        orderNoTax: parseFloat(r[3]) || 0,
+        orderVAT1: parseFloat(r[4]) || 0,
+        orderVAT13: parseFloat(r[5]) || 0,
+        dropNoTax: parseFloat(r[6]) || 0,
+        dropVAT1: parseFloat(r[7]) || 0,
+        dropVAT13: parseFloat(r[8]) || 0,
+        fabric: cellText(r[9])
+      });
+    }
+    return items;
+  }
+
+  /* ----------------------------------------------------------
+     解析 size.xlsx（每个款号一个数据块，空行分隔）
+     数据块结构: 款号,XXX / 号型,170/88A,... / 衣长,... / ...
+     尺码表头取自"号型"行
+     ---------------------------------------------------------- */
+  function parseSizeXLSX(buf) {
+    var wb = XLSX.read(buf, { type: 'array', cellDates: false });
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    var sizes = {}, cur = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var first = cellText(r[0]);
+      if (first === '款号') {
+        var sn = cellText(r[1]);
+        if (sn) {
+          cur = { headers: [], rows: {} };
+          sizes[sn] = cur;
+        }
+      } else if (first === '号型' && cur) {
+        cur.headers = r.slice(1).map(cellText).filter(Boolean);
+      } else if (first && cur) {
+        cur.rows[first] = r.slice(1).map(cellText).filter(Boolean);
+      } else if (!first) {
+        cur = null;
+      }
+    }
+    return sizes;
+  }
+
+  /* ----------------------------------------------------------
+     构建图片顺序：正面图（按颜色）在前，背面图固定最后一张
+     ---------------------------------------------------------- */
+  function buildImageList(imageFiles) {
+    var fronts = [], back = null;
+    for (var i = 0; i < imageFiles.length; i++) {
+      var f = imageFiles[i];
+      if (f.indexOf('背面') !== -1) { back = f; } else { fronts.push(f); }
+    }
+    var list = fronts.slice();
+    if (back) list.push(back);
+    return list;
+  }
+
+  /* ----------------------------------------------------------
+     从文件名提取图片标签（颜色汉字）
+     例: 黑.jpg → 黑；背面.jpg → 背面
+     ---------------------------------------------------------- */
+  function getImageLabel(fileName) {
+    return fileName.replace(/\.(jpg|jpeg|png)$/i, '');
+  }
+
+  /* ----------------------------------------------------------
+     渲染单张商品卡片
+     ---------------------------------------------------------- */
+  function renderCard(product, sizeData, imageFiles) {
+    var card = document.createElement('div');
+    card.className = 'product-card';
+
+    var images = buildImageList(imageFiles);
+
+    /* ---------- 左侧图片轮播（每视图 1 张，点击放大） ---------- */
+    var gallery = document.createElement('div');
+    gallery.className = 'card-gallery';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'carousel-wrap';
+
+    var track = document.createElement('div');
+    track.className = 'carousel-track';
+
+    for (var i = 0; i < images.length; i++) {
+      var slide = document.createElement('div');
+      slide.className = 'carousel-slide';
+      var img = document.createElement('img');
+      img.className = 'slide-img';
+      img.src = 'images/' + product.styleNo + '/' + images[i];
+      img.alt = product.styleNo + ' - ' + images[i];
+      img.loading = 'lazy';
+      img.onerror = function () { this.style.display = 'none'; };
+      slide.appendChild(img);
+      /* 图片正下方标注颜色（汉字）；背面图标注"背面" */
+      var label = document.createElement('div');
+      label.className = 'slide-label';
+      label.textContent = getImageLabel(images[i]);
+      slide.appendChild(label);
+      /* 点击图片放大（灯箱） */
+      slide.addEventListener('click', (function (idx) {
+        return function () {
+          if (draggedRecently) return;   /* 拖拽后不触发点击 */
+          openLightbox(images, idx, 'images/' + product.styleNo + '/');
+        };
+      })(i));
+      track.appendChild(slide);
+    }
+    wrap.appendChild(track);
+
+    /* 桌面端箭头（多于 1 张图时显示） */
+    if (images.length > 1) {
+      var prevBtn = document.createElement('button');
+      prevBtn.className = 'carousel-arrow prev';
+      prevBtn.innerHTML = '&#9664;';
+      prevBtn.addEventListener('click', function () {
+        track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' });
+      });
+      wrap.appendChild(prevBtn);
+
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'carousel-arrow next';
+      nextBtn.innerHTML = '&#9654;';
+      nextBtn.addEventListener('click', function () {
+        track.scrollBy({ left: track.clientWidth, behavior: 'smooth' });
+      });
+      wrap.appendChild(nextBtn);
+    }
+
+    /* 指示点（每张图一个） */
+    var dots = document.createElement('div');
+    dots.className = 'carousel-dots';
+    if (images.length > 1) {
+      for (var d = 0; d < images.length; d++) {
+        var dot = document.createElement('div');
+        dot.className = 'carousel-dot' + (d === 0 ? ' active' : '');
+        dot.setAttribute('data-idx', d);
+        dots.appendChild(dot);
+      }
+    }
+    wrap.appendChild(dots);
+
+    /* 滚动同步指示点 + 兜底吸附（确保一次只停一张） */
+    var snapTimer = null;
+    track.addEventListener('scroll', function () {
+      var idx = Math.round(track.scrollLeft / track.clientWidth);
+      var allDots = dots.querySelectorAll('.carousel-dot');
+      for (var k = 0; k < allDots.length; k++) {
+        allDots[k].classList.toggle('active', k === idx);
+      }
+      /* 滚动停止后吸附到最近一张（兼容不支持 scroll-snap-stop 的浏览器） */
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(function () {
+        var target = Math.round(track.scrollLeft / track.clientWidth);
+        track.scrollTo({ left: target * track.clientWidth, behavior: 'smooth' });
+      }, 150);
+    });
+
+    /* 桌面端鼠标拖拽滑动（拖拽后不触发点击放大） */
+    var dragging = false, draggedRecently = false, startX = 0, startLeft = 0;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      dragging = true;
+      draggedRecently = false;
+      startX = e.clientX;
+      startLeft = track.scrollLeft;
+      track.setPointerCapture(e.pointerId);
+    });
+    track.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      if (Math.abs(e.clientX - startX) > 5) draggedRecently = true;
+      track.scrollLeft = startLeft - (e.clientX - startX);
+    });
+    track.addEventListener('pointerup', function () {
+      dragging = false;
+      setTimeout(function () { draggedRecently = false; }, 100);
+    });
+    track.addEventListener('pointerleave', function () { dragging = false; });
+
+    gallery.appendChild(wrap);
+    card.appendChild(gallery);
+
+    /* ---------- 右侧详情 ---------- */
+    var detail = document.createElement('div');
+    detail.className = 'card-detail';
+
+    /* 款号（左上角黑色圆角标签）+ 上架日期（右上角） */
+    var hdr = document.createElement('div');
+    hdr.className = 'card-header';
+    var badge = document.createElement('span');
+    badge.className = 'style-badge';
+    badge.textContent = '款号：' + product.styleNo;
+    var dateSpan = document.createElement('span');
+    dateSpan.className = 'launch-date';
+    dateSpan.textContent = '上架日期：' + product.date;
+    hdr.appendChild(badge);
+    hdr.appendChild(dateSpan);
+    detail.appendChild(hdr);
+
+    /* 面料成分 */
+    if (product.fabric) {
+      var fabric = document.createElement('div');
+      fabric.className = 'fabric-info';
+      fabric.textContent = '面料成分：' + product.fabric;
+      detail.appendChild(fabric);
+    }
+
+    /* 下单价模块（3 卡片一行，13% 增值税浅米色高亮） */
+    var orderTitle = document.createElement('div');
+    orderTitle.className = 'price-section-title';
+    orderTitle.textContent = '下单价';
+    detail.appendChild(orderTitle);
+    detail.appendChild(buildPriceCards([
+      { label: '未含税', value: product.orderNoTax },
+      { label: '含1%增值税', value: product.orderVAT1 },
+      { label: '含13%增值税', value: product.orderVAT13 }
+    ]));
+
+    /* 代发价模块 */
+    var dropTitle = document.createElement('div');
+    dropTitle.className = 'price-section-title';
+    dropTitle.textContent = '代发价';
+    detail.appendChild(dropTitle);
+    detail.appendChild(buildPriceCards([
+      { label: '未含税', value: product.dropNoTax },
+      { label: '含1%增值税', value: product.dropVAT1 },
+      { label: '含13%增值税', value: product.dropVAT13 }
+    ]));
+
+    /* 尺码表格（完整尺寸参数） */
+    if (sizeData && sizeData.rows) {
+      var sizeTitle = document.createElement('div');
+      sizeTitle.className = 'price-section-title';
+      sizeTitle.textContent = '尺码参数';
+      detail.appendChild(sizeTitle);
+      detail.appendChild(buildSizeTable(sizeData));
+    }
+
+    card.appendChild(detail);
+    return card;
+  }
+
+  /* ----------------------------------------------------------
+     构建价格卡片组（价格四舍五入为整数）
+     ---------------------------------------------------------- */
+  function buildPriceCards(items) {
+    var wrap = document.createElement('div');
+    wrap.className = 'price-cards';
+    for (var i = 0; i < items.length; i++) {
+      var c = document.createElement('div');
+      c.className = 'price-card';
+      var lbl = document.createElement('div');
+      lbl.className = 'price-card-label';
+      lbl.textContent = items[i].label;
+      var val = document.createElement('div');
+      val.className = 'price-card-value';
+      var price = Math.round(items[i].value);
+      val.innerHTML = '<span class="currency">¥</span>' + price;
+      c.appendChild(lbl);
+      c.appendChild(val);
+      wrap.appendChild(c);
+    }
+    return wrap;
+  }
+
+  /* ----------------------------------------------------------
+     构建尺码表格
+     ---------------------------------------------------------- */
+  function buildSizeTable(sizeData) {
+    var wrap = document.createElement('div');
+    wrap.className = 'size-table-wrap';
+    var table = document.createElement('table');
+    table.className = 'size-table';
+    var thead = document.createElement('thead');
+    var tbody = document.createElement('tbody');
+
+    var htr = document.createElement('tr');
+    var th0 = document.createElement('th');
+    th0.textContent = '参数';
+    htr.appendChild(th0);
+    for (var h = 0; h < sizeData.headers.length; h++) {
+      var th = document.createElement('th');
+      th.textContent = sizeData.headers[h];
+      htr.appendChild(th);
+    }
+    thead.appendChild(htr);
+
+    var paramOrder = ['号型', '衣长', '肩宽', '胸围', '袖长', '袖口'];
+    for (var p = 0; p < paramOrder.length; p++) {
+      var paramName = paramOrder[p];
+      var values = sizeData.rows[paramName];
+      if (!values) continue;
+      var tr = document.createElement('tr');
+      var tdLabel = document.createElement('td');
+      tdLabel.textContent = paramName;
+      tdLabel.style.fontWeight = '600';
+      tdLabel.style.background = '#f7f8fa';
+      tr.appendChild(tdLabel);
+      for (var v = 0; v < values.length; v++) {
+        var td = document.createElement('td');
+        td.textContent = values[v];
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  /* ----------------------------------------------------------
+     灯箱（点击图片放大浏览）
+     ---------------------------------------------------------- */
+  var lightbox = document.createElement('div');
+  lightbox.className = 'lightbox';
+  lightbox.innerHTML =
+    '<button class="lb-btn lb-close" title="关闭 (Esc)">&#10005;</button>' +
+    '<button class="lb-btn lb-prev" title="上一张 (←)">&#10094;</button>' +
+    '<img alt="放大预览">' +
+    '<button class="lb-btn lb-next" title="下一张 (→)">&#10095;</button>';
+  document.body.appendChild(lightbox);
+
+  var lbImg = lightbox.querySelector('img');
+  var lbImages = [], lbIndex = 0, lbDir = 'images/';
+
+  function showLightbox() {
+    if (lbImages.length === 0) return;
+    lbImg.src = lbDir + lbImages[lbIndex];
+  }
+  function openLightbox(images, idx, dir) {
+    lbImages = images;
+    lbIndex = idx;
+    if (dir) lbDir = dir;
+    showLightbox();
+    lightbox.classList.add('open');
+  }
+  function closeLightbox() { lightbox.classList.remove('open'); }
+  function lbPrev() {
+    if (lbImages.length > 1) { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; showLightbox(); }
+  }
+  function lbNext() {
+    if (lbImages.length > 1) { lbIndex = (lbIndex + 1) % lbImages.length; showLightbox(); }
+  }
+
+  /* 点击背景或关闭按钮关闭 */
+  lightbox.addEventListener('click', function (e) {
+    if (e.target === lightbox) closeLightbox();
+  });
+  lightbox.querySelector('.lb-close').addEventListener('click', closeLightbox);
+  lightbox.querySelector('.lb-prev').addEventListener('click', function (e) { e.stopPropagation(); lbPrev(); });
+  lightbox.querySelector('.lb-next').addEventListener('click', function (e) { e.stopPropagation(); lbNext(); });
+
+  /* 键盘操作 */
+  document.addEventListener('keydown', function (e) {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') lbPrev();
+    else if (e.key === 'ArrowRight') lbNext();
+  });
+
+  /* ----------------------------------------------------------
+     同步左侧图片区高度 → 右侧尺码表最后一栏结束位置
+     （桌面端生效，移动端保持竖图比例）
+     ---------------------------------------------------------- */
+  function syncGalleryHeights() {
+    if (window.innerWidth <= 860) return;
+    var cards = document.querySelectorAll('.product-card');
+    for (var i = 0; i < cards.length; i++) {
+      var card = cards[i];
+      var gallery = card.querySelector('.card-gallery');
+      var sizeTable = card.querySelector('.size-table');
+      if (!gallery || !sizeTable) continue;
+      var cardTop = card.getBoundingClientRect().top;
+      var tableBottom = sizeTable.getBoundingClientRect().bottom;
+      gallery.style.height = (tableBottom - cardTop) + 'px';
+    }
+  }
+
+  /* 窗口尺寸变化时重新同步（防抖） */
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncGalleryHeights, 150);
+  });
+
+  /* ----------------------------------------------------------
+     主流程
+     ---------------------------------------------------------- */
+  if (location.protocol === 'file:') {
+    APP.innerHTML = '<div class="no-data">'
+      + '<p style="font-size:16px;margin-bottom:12px;"><b>请通过 HTTP 服务访问此页面</b></p>'
+      + '<p>浏览器安全策略禁止本地文件 (file://) 读取 Excel 数据，VSCode 预览内置了本地服务所以正常。</p>'
+      + '<p style="margin-top:12px;">1. 项目根目录运行 <code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">python -m http.server 8000</code></p>'
+      + '<p style="margin-top:6px;">2. 电脑访问 <code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">http://localhost:8000</code>'
+      + '，手机（同一WiFi）访问 <code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">http://电脑局域网IP:8000</code>'
+      + '（IP 用 <code style="background:#f0f0f0;padding:2px 8px;border-radius:4px;">ipconfig</code> 查询）</p>'
+      + '</div>';
+    return;
+  }
+
+  Promise.all([
+    loadFile('data/price.xlsx'),
+    loadFile('data/size.xlsx')
+  ]).then(function (results) {
+    var priceData = parsePriceXLSX(results[0]);
+    var sizeData = parseSizeXLSX(results[1]);
+
+    APP.innerHTML = '';
+
+    if (priceData.length === 0) {
+      APP.innerHTML = '<div class="no-data">暂无商品数据</div>';
+      return;
+    }
+
+    /* 按 price.xlsx 顺序渲染，只显示已有图片的款号 */
+    var rendered = 0;
+    for (var i = 0; i < priceData.length; i++) {
+      var p = priceData[i];
+      var imgFiles = IMAGE_INVENTORY[p.styleNo];
+      if (!imgFiles || imgFiles.length === 0) continue;
+      var card = renderCard(p, sizeData[p.styleNo] || null, imgFiles);
+      APP.appendChild(card);
+      rendered++;
+    }
+
+    if (rendered === 0) {
+      APP.innerHTML = '<div class="no-data">未找到匹配图片的商品</div>';
+    }
+
+    /* 渲染完成后对齐图片区高度与尺码表底部 */
+    syncGalleryHeights();
+    window.addEventListener('load', syncGalleryHeights);
+  }).catch(function (err) {
+    console.error(err);
+    APP.innerHTML = '<div class="no-data">数据加载失败: ' + err.message + '<br>请确保通过 HTTP 服务器访问此页面</div>';
+  });
+
+})();
+</script>
+</body>
+</html>
